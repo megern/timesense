@@ -1,0 +1,48 @@
+{
+  "application": "timesense",
+  "version": "0.2.0",
+  "recorded_at_utc": "2026-10-14T22:05:46.510593+00:00",
+  "evidence_scope": "Application developer rebuild checks, not independent QA or human validation",
+  "checks": [
+    {
+      "check": "pytest",
+      "exit_code": 0,
+      "evidence": "evidence/rebuild/pytest.txt"
+    },
+    {
+      "check": "frontend",
+      "exit_code": 0,
+      "evidence": "evidence/rebuild/frontend.txt"
+    },
+    {
+      "check": "javascript-syntax",
+      "exit_code": 0,
+      "evidence": "evidence/rebuild/javascript-syntax.txt"
+    },
+    {
+      "check": "bandit",
+      "exit_code": 0,
+      "evidence": "evidence/rebuild/bandit.txt"
+    }
+  ],
+  "application_sha256": {
+    "app/USER_GUIDE.md": "d1da4df22531af0bda3da4031cbc36e80c7071f9c143a491a87fab5199ef0b48",
+    "app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "app/guard.py": "0537a96952380ee89e8d6088f0c798b210ab642add3520ee656136d9504584f8",
+    "app/main.py": "84fb8bd4e98395f1671c882906010b8f0c1ba723b7ab62de805fdb9415764179",
+    "app/static/index.html": "33fc02ca78a20730fe2de4843d5d3e8905b57f43d58b8911085e0fdcea27dba1",
+    "app/static/config.js": "094dac7a17f296b5a2f7f11b4a2068c0dec1a20b8b5a0b9876a0edb5e9cac012",
+    "app/static/data.js": "c12a15bcb1b73fafcf4a5484562b0ccdf657fc53933596222b79c8fdf9dd53c0",
+    "app/static/style.css": "2f18278b89e88530bfd63e93255cf54725bf3c54ea633429ba4bcb909ee4220f",
+    "app/static/workbench.js": "c0acf47d1231da72d47898ae7699eebd047f271c60ff5cc41feed07107af2aec"
+  },
+  "not_verified_by_this_record": [
+    "Docker runtime",
+    "interactive browser UI",
+    "remote GitHub CI",
+    "dependency audit",
+    "release publication"
+  ],
+  "data_provenance": "Bundled examples and test fixtures are synthetic; user imports unverified.",
+  "csv_integrity_followup": "Explicit quoted-empty/whitespace-only/delimiter-empty records preserved; only physically empty lines skipped. Missing numeric observations produce actionable errors. All Python+Node checks rerun and passed."
+}
