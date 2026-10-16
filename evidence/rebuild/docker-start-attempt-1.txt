@@ -1,0 +1,6 @@
+ Container venture-lab-timesense-1  Recreate
+ Container venture-lab-timesense-1  Recreated
+ Container venture-lab-timesense-1  Starting
+ Container venture-lab-timesense-1  Started
+ Container venture-lab-timesense-1  Waiting
+ Container venture-lab-timesense-1  Healthy

@@ -1,0 +1,42 @@
+{
+  "synthetic": true,
+  "http_status": 200,
+  "invalid_input_status": 422,
+  "latency_ms": [
+    26.372792199254036,
+    2.7456250973045826,
+    2.0720420870929956
+  ],
+  "result": {
+    "holdout_prediction": [
+      20.0,
+      21.0,
+      22.0,
+      23.0,
+      24.0
+    ],
+    "holdout_actual": [
+      20.0,
+      21.0,
+      40.0,
+      23.0,
+      24.0
+    ],
+    "mae": 3.6,
+    "rmse": 8.049844718999243,
+    "anomalies": [
+      {
+        "index": 12,
+        "value": 40.0,
+        "residual": 18.0
+      }
+    ],
+    "training_residual_scale": 0.0,
+    "future_forecast": [
+      25.0,
+      26.0,
+      27.0
+    ],
+    "limitations": "Holdout is forecast once from the chronological training prefix. Anomalies use training-only one-step residual calibration, so longer-horizon uncertainty can inflate flags. Equally spaced observations required; timestamps and prediction intervals are not modeled."
+  }
+}
