@@ -1,0 +1,48 @@
+{
+  "application": "timesense",
+  "version": "0.3.0",
+  "recorded_at_utc": "2026-10-16T22:00:11.147124+00:00",
+  "role": "Application developer checks; not an independent or human audit",
+  "checks": [
+    {
+      "label": "pytest",
+      "exit_code": 0,
+      "evidence": "evidence/improvements-0.3/pytest.txt"
+    },
+    {
+      "label": "frontend",
+      "exit_code": 0,
+      "evidence": "evidence/improvements-0.3/frontend.txt"
+    },
+    {
+      "label": "ruff",
+      "exit_code": 0,
+      "evidence": "evidence/improvements-0.3/ruff.txt"
+    },
+    {
+      "label": "bandit",
+      "exit_code": 0,
+      "evidence": "evidence/improvements-0.3/bandit.txt"
+    }
+  ],
+  "javascript_syntax": "all selfhosted .js files checked with node --check, exit0",
+  "application_sha256": {
+    "app/USER_GUIDE.md": "910fc1ebec007208aaeb58614378868487768e555d3ab2ff0f3963e33c1b8423",
+    "app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "app/guard.py": "d1eda2150e58503114c6cf4ba36d5958aa7e2cfbb496fc0d8026b5c9da4beb77",
+    "app/main.py": "2dc09fb1b02bea9ecbc91ff4fd1526cf81f53f827c9bd694a6b8ad68745e6de0",
+    "app/static/index.html": "54259efd4302c1fbfcb55da97fd5e2efed68888ada1d5d1f81c6bd5f24cf9982",
+    "app/static/config.js": "e02a47815c31811b22b686e80b27757afe47bd0615985490d7122fa1b0020f12",
+    "app/static/data.js": "2061845f6428ea48621fcc9c3a4c7702c8319a864863a80288110986d0fae413",
+    "app/static/style.css": "2f18278b89e88530bfd63e93255cf54725bf3c54ea633429ba4bcb909ee4220f",
+    "app/static/workbench.js": "4fe8cfb382553071b60d9cc981a728531fbefe3e5ebbd9b017085e414db85e36"
+  },
+  "external_gates_not_claimed": [
+    "Docker build/runtime",
+    "interactive browser verification",
+    "dependency/secret audit",
+    "remote CI",
+    "release publication"
+  ],
+  "synthetic_data": true
+}

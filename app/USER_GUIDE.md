@@ -1,4 +1,4 @@
-# TimeSense user guide — v0.2.0
+# TimeSense user guide — v0.3.0
 
 ## What this tool does
 
@@ -49,7 +49,7 @@ values
 19.2
 ```
 
-Input requirements: At least10 finite numeric observations and five remaining training rows. Rows must be chronological and equally spaced; timestamp columns are not interpreted or sorted. Seasonal requires two complete training seasons. Holdout/horizon are bounded at10,000; horizon refers to future steps, not a calendar date.
+Input requirements: At least10 finite numeric observations and five remaining training rows. Rows must be chronological and equally spaced; timestamps are optionally validated as described below; input is never sorted. Seasonal requires two complete training seasons. Holdout/horizon are bounded at10,000; horizon refers to future steps, not a calendar date.
 
 ## Methods
 
@@ -74,7 +74,7 @@ See examples/synthetic.json for a complete forecast request; the short CSV fragm
 
 ## Assumptions and limits
 
-One-step residual calibration does not model full multi-step uncertainty, so later horizon errors can trigger extra flags. There are no prediction intervals, missing-value imputation, timestamp regularization, change-point models, automatic model selection or guaranteed anomaly precision. Changes in measurement or regime require domain inspection.
+One-step residual calibration does not model full multi-step uncertainty, so later horizon errors can trigger extra flags. There are no prediction intervals, missing-value imputation, automatic timestamp regularization, change-point models, automatic model selection or guaranteed anomaly precision. Changes in measurement or regime require domain inspection.
 
 These are bounded local research tools. Synthetic fixtures do not establish external scientific validity. No domain expert or human audit is claimed. For network exposure, configure authentication, HTTPS, rate limits and deployment concurrency/memory bounds. Defaults bind to localhost and containers run without root privileges.
 
@@ -93,6 +93,16 @@ pip-audit --strict
 bandit -r app -ll
 ```
 
-Python tests exercise numerical results and actual HTTP endpoints. Node tests exercise CSV parsing, column mapping, numeric rejection and the synthetic analysis payload. Node22+ is used for development checks; it is not a runtime service dependency. Fresh rebuild evidence is under `evidence/rebuild/`; it records what was run and does not establish unexecuted Docker, GitHub CI or human validation. Configure required CI checks and never merge a failing release.
+Python tests exercise numerical results and actual HTTP endpoints. Node tests exercise CSV parsing, column mapping, numeric rejection and the synthetic analysis payload. Node22+ is used for development checks; it is not a runtime service dependency. Fresh v0.3.0 developer evidence is under `evidence/improvements-0.3/`; it records what was run and does not establish unexecuted Docker, GitHub CI or human validation. Configure required CI checks and never merge a failing release.
 
 MIT license; see LICENSE.
+
+## v0.3.0: optional timestamp validation and dated forecasts
+
+The CSV mapping panel now includes an optional timestamp column; the synthetic CSV contains a daily `timestamp` column. API `timestamps` is an optional string array exactly as long as `values`. Omitting it preserves the old API behavior: chronological regular row order is assumed and no calendar output is invented.
+
+Accepted values are `YYYY-MM-DD` dates (interpreted at midnight UTC) or ISO datetimes with a T separator and explicit `Z` or ±HH:MM offset, such as `2026-01-01T12:00:00+03:00`. Numeric timezone offsets require hours00–23 and minutes00–59; malformed offsets are rejected rather than normalized. Fractional seconds are limited to six digits; leap seconds and naive datetimes are unsupported. All values normalize to UTC. Inputs must already be strictly increasing by UTC instant and have exactly equal intervals at datetime microsecond precision; they are never sorted, dropped, interpolated or resampled. Mixed offsets can be accepted when actual UTC intervals are equal; duplicate instants, naive datetimes, invalid dates, irregular spacing and calendar overflow return actionable422 errors.
+
+The response adds `holdout_timestamps`, `future_timestamps`, `timestamp_interval_seconds` and `timestamp_basis` only when timestamps are supplied. Dates output as aware midnight-UTC timestamps; future timestamps extend the verified fixed UTC interval. These fields annotate the existing baseline calculations; future values remain unevaluated projections. Example: ten daily values datedJan1–Jan10 with horizon2 produce Jan11/Jan12 at00:00:00Z.
+
+**DST and calendars:** equal local wall-clock spacing can be irregular in UTC across daylight-saving changes and will be rejected. There is no timezone database, business-day calendar or automatic resampling. Choose and document a suitable regular UTC grid or a calendar-aware forecasting method outside this tool. Prediction intervals and automatic missing-time repair remain out of scope.

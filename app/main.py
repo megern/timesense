@@ -1,11 +1,14 @@
 import math
+from .guard import InputGuard
+import re
+from datetime import date, datetime, timezone
 from typing import Literal
 import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, PrivateAttr, model_validator
 
 
 def finite(values):
@@ -24,6 +27,52 @@ def matrix(rows):
     finite([v for row in rows for v in row])
 
 
+def parse_timestamps(values):
+    """Accept ISO dates or timezone-aware datetimes and compare instants in UTC."""
+    normalized = []
+    for index, value in enumerate(values):
+        try:
+            if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+                parsed = datetime.combine(
+                    date.fromisoformat(value), datetime.min.time(), timezone.utc
+                )
+            elif re.fullmatch(
+                r"\d{4}-\d{2}-\d{2}[Tt]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])",
+                value,
+            ):
+                parsed = datetime.fromisoformat(
+                    value.replace("Z", "+00:00").replace("t", "T")
+                )
+                if parsed.tzinfo is None or parsed.utcoffset() is None:
+                    raise ValueError("datetime needs an explicit UTC offset or Z")
+                parsed = parsed.astimezone(timezone.utc)
+            else:
+                raise ValueError(
+                    "use YYYY-MM-DD or an ISO datetime with T and Z/±HH:MM offset (hours 00..23, minutes 00..59; at most six fractional-second digits)"
+                )
+            normalized.append(parsed)
+        except (ValueError, OverflowError) as exc:
+            raise ValueError(f"timestamp row {index + 1}: {exc}") from exc
+    step = normalized[1] - normalized[0]
+    if step.total_seconds() <= 0:
+        raise ValueError("timestamps must be strictly increasing in UTC")
+    for index in range(1, len(normalized)):
+        current_step = normalized[index] - normalized[index - 1]
+        if current_step.total_seconds() <= 0:
+            raise ValueError(
+                f"timestamp row {index + 1}: timestamps must be strictly increasing in UTC"
+            )
+        if current_step != step:
+            raise ValueError(
+                f"timestamp row {index + 1}: intervals must be regular in UTC; resample explicitly before analysis"
+            )
+    return normalized
+
+
+def utc_string(value):
+    return value.isoformat().replace("+00:00", "Z")
+
+
 class Request(BaseModel):
     values: list[float] = Field(min_length=10, max_length=100000)
     holdout: int = Field(default=5, ge=1, le=10000)
@@ -31,6 +80,9 @@ class Request(BaseModel):
     method: Literal["naive", "drift", "seasonal"] = "drift"
     season_length: int = Field(default=1, ge=1, le=10000)
     anomaly_threshold: float = Field(default=3, ge=1, le=20)
+
+    timestamps: list[str] | None = Field(default=None, min_length=10, max_length=100000)
+    _timeline: list[datetime] | None = PrivateAttr(default=None)
 
     @model_validator(mode="after")
     def valid(self):
@@ -42,6 +94,19 @@ class Request(BaseModel):
             and len(self.values) - self.holdout < 2 * self.season_length
         ):
             raise ValueError("seasonal forecasts require two training seasons")
+        if self.timestamps is not None:
+            if len(self.timestamps) != len(self.values):
+                raise ValueError("timestamps and values must have equal lengths")
+            self._timeline = parse_timestamps(self.timestamps)
+            try:
+                (
+                    self._timeline[-1]
+                    + (self._timeline[1] - self._timeline[0]) * self.horizon
+                )
+            except OverflowError as exc:
+                raise ValueError(
+                    "future timestamps exceed the supported calendar range; reduce horizon"
+                ) from exc
         return self
 
 
@@ -77,7 +142,22 @@ def analyze(req: Request):
     flags = np.abs(residual - center) > (
         req.anomaly_threshold * scale if scale > tolerance else tolerance
     )
+    timestamp_output = {}
+    if req._timeline is not None:
+        step = req._timeline[1] - req._timeline[0]
+        timestamp_output = {
+            "holdout_timestamps": [
+                utc_string(value) for value in req._timeline[-req.holdout :]
+            ],
+            "future_timestamps": [
+                utc_string(req._timeline[-1] + step * i)
+                for i in range(1, req.horizon + 1)
+            ],
+            "timestamp_interval_seconds": step.total_seconds(),
+            "timestamp_basis": "UTC instants; date-only values are midnight UTC. Regular intervals checked exactly at Python datetime microsecond precision. No automatic resampling or DST calendar adjustment.",
+        }
     return {
+        **timestamp_output,
         "holdout_prediction": prediction.tolist(),
         "holdout_actual": actual.tolist(),
         "mae": float(np.mean(np.abs(residual))),
@@ -94,11 +174,11 @@ def analyze(req: Request):
         "future_forecast": forecast(
             values, req.horizon, req.method, req.season_length
         ).tolist(),
-        "limitations": "Holdout is forecast once from the chronological training prefix. Anomalies use training-only one-step residual calibration, so longer-horizon uncertainty can inflate flags. Equally spaced observations required; timestamps and prediction intervals are not modeled.",
+        "limitations": "Holdout is forecast once from the chronological training prefix. Anomalies use training-only one-step residual calibration, so longer-horizon uncertainty can inflate flags. Equally spaced observations required; supplied timestamps are validated as regular UTC instants. Without timestamps, chronological regular row order is assumed. Prediction intervals are not modeled.",
     }
 
 
-app = FastAPI(title="TimeSense", version="0.2.0")
+app = FastAPI(title="TimeSense", version="0.3.0")
 
 
 STATIC = Path(__file__).parent / "static"
@@ -142,7 +222,5 @@ def run_analysis(req: Request):
     except (ValueError, np.linalg.LinAlgError, OverflowError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-
-from .guard import InputGuard
 
 app.add_middleware(InputGuard)
