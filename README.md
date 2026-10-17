@@ -2,7 +2,7 @@
 
 Evaluate chronological fixed-origin baseline forecasts and flag holdout residuals using training-only calibration.
 
-**Version0.2.0: local CPU research workbench.** Import a CSV, map the relevant columns, run the real calculation and inspect plots, tables and method assumptions. Export a JSON result report or exact replayable input. No API key, GPU, paid service or external model call is required.
+**Version 0.3.0: local CPU research workbench.** Import a CSV, map the relevant columns, run the real calculation and inspect plots, tables and method assumptions. Export a JSON result report or exact replayable input. No API key, GPU, paid service or external model call is required.
 
 ## Why use it
 
@@ -33,7 +33,7 @@ curl --fail -H 'Content-Type: application/json' --data-binary @examples/syntheti
 
 ## Inputs, outputs and scientific scope
 
-At least10 finite numeric observations and five remaining training rows. Rows must be chronological and equally spaced; timestamp columns are not interpreted or sorted. Seasonal requires two complete training seasons. Holdout/horizon are bounded at10,000; horizon refers to future steps, not a calendar date.
+At least10 finite numeric observations and five remaining training rows. Rows must be chronological and equally spaced; timestamp validation is optional and never sorts input. Seasonal requires two complete training seasons. Holdout/horizon are bounded at10,000; horizon refers to future steps, not a calendar date.
 
 MAE/RMSE are in value units. Holdout anomalies include zero-based original index, actual value and residual. The UI displays one-based row numbers. Flags mark a residual threshold, not a probability or verified anomaly. A zero training residual scale uses numeric tolerance for deterministic sequences. The result table separates future projections from evaluated holdout rows.
 
@@ -51,4 +51,14 @@ pip-audit --strict
 bandit -r app -ll
 ```
 
-Node is needed only for frontend development checks. Fresh rebuild evidence is in `evidence/rebuild/`. No Docker runtime, remote CI, publication or human review is implied merely by creating files. Required CI must pass before merging. Containers bind localhost and run nonroot; add authentication, HTTPS and deployment resource limits before external access. MIT license.
+Node is needed only for frontend development checks. Fresh v0.3.0 developer evidence is in `evidence/improvements-0.3/`; previous v0.2 records remain historical. No Docker runtime, remote CI, publication or human review is implied merely by creating files. Required CI must pass before merging. Containers bind localhost and run nonroot; add authentication, HTTPS and deployment resource limits before external access. MIT license.
+
+## v0.3.0: optional timestamp validation and dated forecasts
+
+The CSV mapping panel now includes an optional timestamp column; the synthetic CSV contains a daily `timestamp` column. API `timestamps` is an optional string array exactly as long as `values`. Omitting it preserves the old API behavior: chronological regular row order is assumed and no calendar output is invented.
+
+Accepted values are `YYYY-MM-DD` dates (interpreted at midnight UTC) or ISO datetimes with a T separator and explicit `Z` or ±HH:MM offset, such as `2026-01-01T12:00:00+03:00`. Numeric timezone offsets require hours00–23 and minutes00–59; malformed offsets are rejected rather than normalized. Fractional seconds are limited to six digits; leap seconds and naive datetimes are unsupported. All values normalize to UTC. Inputs must already be strictly increasing by UTC instant and have exactly equal intervals at datetime microsecond precision; they are never sorted, dropped, interpolated or resampled. Mixed offsets can be accepted when actual UTC intervals are equal; duplicate instants, naive datetimes, invalid dates, irregular spacing and calendar overflow return actionable422 errors.
+
+The response adds `holdout_timestamps`, `future_timestamps`, `timestamp_interval_seconds` and `timestamp_basis` only when timestamps are supplied. Dates output as aware midnight-UTC timestamps; future timestamps extend the verified fixed UTC interval. These fields annotate the existing baseline calculations; future values remain unevaluated projections. Example: ten daily values datedJan1–Jan10 with horizon2 produce Jan11/Jan12 at00:00:00Z.
+
+**DST and calendars:** equal local wall-clock spacing can be irregular in UTC across daylight-saving changes and will be rejected. There is no timezone database, business-day calendar or automatic resampling. Choose and document a suitable regular UTC grid or a calendar-aware forecasting method outside this tool. Prediction intervals and automatic missing-time repair remain out of scope.

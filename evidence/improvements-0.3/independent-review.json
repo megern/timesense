@@ -1,0 +1,66 @@
+{
+  "status": "PASS",
+  "pytest": {
+    "passed": 41,
+    "failed": 0
+  },
+  "confidence": "High for tested regular-grid UTC timestamp annotation, microsecond preservation and strict timezone offset component validation; forecasting applicability remains domain-dependent.",
+  "scope": [
+    "Independent microsecond UTC grid and exact future timestamp annotations",
+    "Existing date-only, mixed-offset, DST, overflow and timestamp-free behavior tests rerun",
+    "Independent invalid offset minute cases +00:60, +01:99 and -02:75 each now return controlled HTTP422 after author repair",
+    "Inspected fixed-origin holdout, training-only anomaly calibration and dated future arrays"
+  ],
+  "issues": [],
+  "limits": "Calendar annotations require a regular UTC grid, with no DST/calendar resampling. Future values are unevaluated projections; anomaly calibration uses one-step training residuals and is not a probability or multi-step interval.",
+  "application": "timesense",
+  "version": "0.3.0",
+  "reviewer": "build_enterprise automated independent science/QA reviewer",
+  "independent_author": true,
+  "production_code_changed_by_reviewer": false,
+  "reviewed_at_utc": "2026-10-17T02:36:38.570502+00:00",
+  "source_files_sha256": {
+    "README.md": "26aa273efadefcd495f265f87c01c2741a3ea83e922a26f90bab013616326764",
+    "app/USER_GUIDE.md": "d26b8388c0f9f042108454eb1159227da97b117d50a9d926749f3aa507dbe645",
+    "app/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "app/guard.py": "d1eda2150e58503114c6cf4ba36d5958aa7e2cfbb496fc0d8026b5c9da4beb77",
+    "app/main.py": "c2bcfd7266656db7d9afd51708a61fb07f64bb4cb7f24c2993ccd6d79a4a0880",
+    "app/static/config.js": "e02a47815c31811b22b686e80b27757afe47bd0615985490d7122fa1b0020f12",
+    "app/static/data.js": "2061845f6428ea48621fcc9c3a4c7702c8319a864863a80288110986d0fae413",
+    "app/static/index.html": "54259efd4302c1fbfcb55da97fd5e2efed68888ada1d5d1f81c6bd5f24cf9982",
+    "app/static/style.css": "2f18278b89e88530bfd63e93255cf54725bf3c54ea633429ba4bcb909ee4220f",
+    "app/static/workbench.js": "4fe8cfb382553071b60d9cc981a728531fbefe3e5ebbd9b017085e414db85e36",
+    "docs/USER_GUIDE.md": "d26b8388c0f9f042108454eb1159227da97b117d50a9d926749f3aa507dbe645",
+    "pyproject.toml": "36289a2b272a9c9d9ddf4c985f232f5126d4d34c57b469691a01d1a71d009d2b"
+  },
+  "reviewed_source_sha256": "6486094e2bafeeae8f42f589055c358c5a581bafbcf68a737ff60222f4e39bbb",
+  "independent_regressions": "tests/test_independent03_enterprise.py",
+  "test_commands": [
+    "work/.venv/bin/python -m pytest -q (repository cwd)",
+    "node --test tools/test_ui.mjs",
+    "work/.venv/bin/python -m bandit -r app -ll"
+  ],
+  "evidence": {
+    "python": "independent-pytest.txt",
+    "node": "independent-node.txt",
+    "bandit": "independent-bandit.txt"
+  },
+  "node": "PASS; existing real CSV/mapping/canvas logic checks, not a browser render claim",
+  "bandit": "PASS, no configured static findings",
+  "publication": "Reviewer did not commit, push, alter Docker, or claim hosted CI completion.",
+  "resolved_issues": [
+    {
+      "severity": "P2",
+      "blocking": true,
+      "location": "app/main.py parse_timestamps datetime offset regex",
+      "detail": "Offset minute components are unconstrained digits. datetime.fromisoformat silently normalizes invalid offsets (e.g. +00:60 becomes +01:00), so malformed input can be accepted with changed UTC instants. Added three failing independent API regressions; restrict offset component ranges before parsing.",
+      "resolution": "Original author repaired source and documentation; independent reviewer reran preserved regressions and full suites successfully."
+    }
+  ],
+  "independent_regressions_sha256": "14093ccd8c9394648a89833b57bde6182d30966ba69c285a39951de3c5596c4f",
+  "runtime_http": {
+    "status": "PASS",
+    "evidence": "independent-docker-http.json",
+    "note": "Real HTTP checks passed against source-matching served guide."
+  }
+}

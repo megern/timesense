@@ -128,3 +128,42 @@ test("synthetic CSV produces actual API request", () => {
   }
 });
 console.log(`${checks} frontend checks passed for ${cfg.title}`);
+
+test("optional timestamp CSV mapping preserves original ISO strings and row alignment", () => {
+  const data = parseCSV(
+    "when,values\n" +
+      Array.from(
+        { length: 12 },
+        (_, i) => `2026-01-${String(i + 1).padStart(2, "0")},${i}`,
+      ).join("\n"),
+  );
+  const request = payload(
+    "timesense",
+    data,
+    { values: "values", timestamps: "when" },
+    { holdout: 3, horizon: 2, method: "drift" },
+  );
+  assert.equal(request.timestamps[0], "2026-01-01");
+  assert.equal(request.timestamps[11], "2026-01-12");
+  assert.equal(request.timestamps.length, request.values.length);
+  const legacy = payload(
+    "timesense",
+    data,
+    { values: "values" },
+    { holdout: 3, horizon: 2, method: "drift" },
+  );
+  assert.equal(Object.hasOwn(legacy, "timestamps"), false);
+  data.rows[4][0] = "";
+  assert.throws(
+    () =>
+      payload(
+        "timesense",
+        data,
+        { values: "values", timestamps: "when" },
+        { holdout: 3, horizon: 2, method: "drift" },
+      ),
+    /Row 6.*missing timestamps/,
+  );
+});
+
+console.log(`${checks} final frontend checks passed for ${cfg.title} v0.3.0`);

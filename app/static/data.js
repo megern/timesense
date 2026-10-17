@@ -134,6 +134,18 @@
     }
     if (kind === "timesense") {
       out.values = numericColumn(data, map.values);
+      if (map.timestamps) {
+        const column = data.headers.indexOf(map.timestamps);
+        if (column < 0) throw Error("Select an existing timestamp column.");
+        out.timestamps = data.rows.map((row, i) => {
+          const value = row[column].trim();
+          if (!value)
+            throw Error(
+              `Row ${i + 2}, timestamp column: missing timestamps are not silently removed.`,
+            );
+          return value;
+        });
+      }
       if (out.values.length < 10)
         throw Error("Forecast evaluation needs at least ten observations.");
       if (out.values.length - out.holdout < 5)

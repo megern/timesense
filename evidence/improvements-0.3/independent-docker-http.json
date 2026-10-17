@@ -1,0 +1,24 @@
+{
+  "reviewer": "build_enterprise independent reviewer",
+  "version": "0.3.0",
+  "checked_at_utc": "2026-10-17T02:36:38.469472+00:00",
+  "url": "http://127.0.0.1:18212",
+  "synthetic": true,
+  "scope": "Actual HTTP functional and error-path checks. This is not a browser rendering or Docker source-identity claim.",
+  "checks": [
+    "Actual service advertises API version0.3.0",
+    "Running service guide bytes match current reviewed local guide",
+    "Root HTML and every served static asset match current reviewed source bytes",
+    "Dated forecast output uses verified regular UTC instants",
+    "All three independently found invalid offset-minute forms reject with actual HTTP422"
+  ],
+  "guide_sha256": "d26b8388c0f9f042108454eb1159227da97b117d50a9d926749f3aa507dbe645",
+  "served_assets_sha256": {
+    "/static/config.js": "e02a47815c31811b22b686e80b27757afe47bd0615985490d7122fa1b0020f12",
+    "/static/data.js": "2061845f6428ea48621fcc9c3a4c7702c8319a864863a80288110986d0fae413",
+    "/static/index.html": "54259efd4302c1fbfcb55da97fd5e2efed68888ada1d5d1f81c6bd5f24cf9982",
+    "/static/style.css": "2f18278b89e88530bfd63e93255cf54725bf3c54ea633429ba4bcb909ee4220f",
+    "/static/workbench.js": "4fe8cfb382553071b60d9cc981a728531fbefe3e5ebbd9b017085e414db85e36"
+  },
+  "status": "PASS"
+}
