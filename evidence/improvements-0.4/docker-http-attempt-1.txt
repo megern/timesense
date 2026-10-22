@@ -1,0 +1,56 @@
+{
+  "synthetic": true,
+  "http_status": 200,
+  "invalid_input_status": 422,
+  "latency_ms": [
+    300.68279104307294,
+    21.461332915350795,
+    32.4542080052197
+  ],
+  "result": {
+    "holdout_timestamps": [
+      "2026-01-11T00:00:00Z",
+      "2026-01-12T00:00:00Z",
+      "2026-01-13T00:00:00Z",
+      "2026-01-14T00:00:00Z",
+      "2026-01-15T00:00:00Z"
+    ],
+    "future_timestamps": [
+      "2026-01-16T00:00:00Z",
+      "2026-01-17T00:00:00Z",
+      "2026-01-18T00:00:00Z"
+    ],
+    "timestamp_interval_seconds": 86400.0,
+    "timestamp_basis": "UTC instants; date-only values are midnight UTC. Regular intervals checked exactly at Python datetime microsecond precision. No automatic resampling or DST calendar adjustment.",
+    "holdout_prediction": [
+      20.0,
+      21.0,
+      22.0,
+      23.0,
+      24.0
+    ],
+    "holdout_actual": [
+      20.0,
+      21.0,
+      40.0,
+      23.0,
+      24.0
+    ],
+    "mae": 3.6,
+    "rmse": 8.049844718999243,
+    "anomalies": [
+      {
+        "index": 12,
+        "value": 40.0,
+        "residual": 18.0
+      }
+    ],
+    "training_residual_scale": 0.0,
+    "future_forecast": [
+      25.0,
+      26.0,
+      27.0
+    ],
+    "limitations": "Holdout is forecast once from the chronological training prefix. Anomalies use training-only one-step residual calibration, so longer-horizon uncertainty can inflate flags. Equally spaced observations required; supplied timestamps are validated as regular UTC instants. Without timestamps, chronological regular row order is assumed. Prediction intervals are not modeled."
+  }
+}
