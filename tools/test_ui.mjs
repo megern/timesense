@@ -127,7 +127,6 @@ test("synthetic CSV produces actual API request", () => {
     );
   }
 });
-console.log(`${checks} frontend checks passed for ${cfg.title}`);
 
 test("optional timestamp CSV mapping preserves original ISO strings and row alignment", () => {
   const data = parseCSV(
@@ -166,4 +165,22 @@ test("optional timestamp CSV mapping preserves original ISO strings and row alig
   );
 });
 
-console.log(`${checks} final frontend checks passed for ${cfg.title} v0.3.0`);
+const advanced = require("../app/static/advanced-data.js");
+test("rolling request keeps all observations and timestamps without holding out globally", () => {
+  const parsed = parseCSV("time,x\n2026-01-01,1\n2026-01-02,2\n2026-01-03,3");
+  const request = advanced.rollingInput(
+    parsed,
+    { values: "x", timestamps: "time" },
+    { initial_train: 5, folds: 2, horizon: 1 },
+  );
+  assert.deepEqual(request.values, [1, 2, 3]);
+  assert.equal(request.timestamps[2], "2026-01-03");
+  parsed.rows[1][0] = "";
+  assert.throws(
+    () =>
+      advanced.rollingInput(parsed, { values: "x", timestamps: "time" }, {}),
+    /timestamp is missing/,
+  );
+});
+
+console.log(`${checks} frontend checks passed for ${cfg.title} v0.4.0`);

@@ -1,4 +1,6 @@
+from .access import AccessControl
 import math
+from .rolling import RollingRequest, compare_origins
 from .guard import InputGuard
 import re
 from datetime import date, datetime, timezone
@@ -178,7 +180,7 @@ def analyze(req: Request):
     }
 
 
-app = FastAPI(title="TimeSense", version="0.3.0")
+app = FastAPI(title="TimeSense", version="0.4.0")
 
 
 STATIC = Path(__file__).parent / "static"
@@ -224,3 +226,20 @@ def run_analysis(req: Request):
 
 
 app.add_middleware(InputGuard)
+
+
+@app.post("/rolling")
+def rolling(request: RollingRequest):
+    try:
+        result = compare_origins(request, forecast, parse_timestamps, utc_string)
+        if any(
+            not math.isfinite(r["mae"]) or not math.isfinite(r["rmse"])
+            for r in result["results"]
+        ):
+            raise ValueError("forecast error overflow; rescale observations")
+        return result
+    except (ValueError, OverflowError, FloatingPointError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+app.add_middleware(AccessControl)

@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>TimeSense · Research workbench</title>
     <link rel="stylesheet" href="/static/style.css" />
+    <script src="/static/access.js"></script>
     <script src="/static/config.js" defer></script>
     <script src="/static/data.js" defer></script>
     <script src="/static/workbench.js" defer></script>
+    <script src="/static/advanced-data.js" defer></script>
+    <script src="/static/advanced-ui.js" defer></script>
   </head>
   <body>
     <header>
-      <span class="badge">Local CPU research · v0.3.0</span>
+      <span class="badge">Local CPU research · v0.4.0</span>
       <h1>TimeSense</h1>
       <p>
         Evaluate chronological forecasts and inspect unusual holdout errors.
@@ -127,6 +130,79 @@
           <summary>Exact API response</summary>
           <pre id="raw"></pre>
         </details>
+      </section>
+      <section class="full" id="rolling-panel">
+        <h2>4. Expanding-window forecast comparison</h2>
+        <p>
+          Uses the loaded CSV and its value/timestamp mapping above. Each fold
+          forecasts unseen later rows from its own training prefix. This does
+          not select a scientifically validated best model.
+        </p>
+        <div class="fields">
+          <div>
+            <label for="rolling-train">Initial training rows</label
+            ><input
+              id="rolling-train"
+              type="number"
+              value="16"
+              min="5"
+              max="2000"
+            />
+          </div>
+          <div>
+            <label for="rolling-horizon">Horizon per origin (1–24)</label
+            ><input
+              id="rolling-horizon"
+              type="number"
+              value="4"
+              min="1"
+              max="24"
+            />
+          </div>
+          <div>
+            <label for="rolling-folds">Origins (1–8)</label
+            ><input
+              id="rolling-folds"
+              type="number"
+              value="4"
+              min="1"
+              max="8"
+            />
+          </div>
+          <div>
+            <label for="rolling-step">Step between origins</label
+            ><input
+              id="rolling-step"
+              type="number"
+              value="4"
+              min="1"
+              max="240"
+            />
+          </div>
+          <div>
+            <label for="rolling-season">Season length</label
+            ><input
+              id="rolling-season"
+              type="number"
+              value="4"
+              min="1"
+              max="100"
+            />
+          </div>
+        </div>
+        <button id="rolling-run">Compare naive, drift and seasonal</button
+        ><button id="rolling-export" disabled class="secondary">
+          Export origin report
+        </button>
+        <p id="rolling-status" role="status"></p>
+        <div id="rolling-results" hidden>
+          <div id="rolling-summary" class="scroll"></div>
+          <h3>Errors by forecast horizon</h3>
+          <div id="rolling-horizons" class="scroll"></div>
+          <h3>Actual origin forecasts</h3>
+          <div id="rolling-origins" class="scroll"></div>
+          <p id="rolling-assumptions" class="hint"></p>
+        </div>
       </section>
     </main>
     <footer>
